@@ -1,4 +1,6 @@
-package com.fulin;
+package com.fulin.threadpool;
+
+import com.fulin.threadpool.template.AbstractMyThreadPool;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -8,7 +10,7 @@ import java.util.concurrent.BlockingQueue;
  * @Description: 单线程线程池实现
  * @DateTime: 2025/4/6 下午1:20
  **/
-public class MySingleThreadPool {
+public class MySingleThreadPool extends AbstractMyThreadPool {
 
     // 阻塞队列保存任务
     BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(1024);
@@ -30,7 +32,7 @@ public class MySingleThreadPool {
         thread.start();
     }
 
-    void execute(Runnable command) {
+    public void execute(Runnable command) {
         // 将任务添加到阻塞队列中
         boolean offer = blockingQueue.offer(command);
     }

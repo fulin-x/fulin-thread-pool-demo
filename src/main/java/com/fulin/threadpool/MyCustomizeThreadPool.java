@@ -1,4 +1,7 @@
-package com.fulin;
+package com.fulin.threadpool;
+
+import com.fulin.handle.RejectHandle;
+import com.fulin.threadpool.template.AbstractMyThreadPool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * @Description: TODO
  * @DateTime: 2025/4/6 下午2:20
  **/
-public class MyThreadPool {
+public class MyCustomizeThreadPool extends AbstractMyThreadPool {
 
     // 核心线程数
     private int corePoolSize = 10;
@@ -19,22 +22,28 @@ public class MyThreadPool {
     // 最大线程数量
     private int maxSize = 16;
 
+    // 超时时间
     private int timeout = 1;
 
+    // 时间单位
     private TimeUnit timeUnit = TimeUnit.SECONDS;
 
     // 阻塞队列保存任务
-    private BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(1024);
+    public BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(1024);
 
-    public MyThreadPool() {
+    // 拒绝策略
+    private RejectHandle rejectHandle;
+
+    public MyCustomizeThreadPool() {
     }
 
-    public MyThreadPool(int corePoolSize, int maxSize, int timeout, TimeUnit timeUnit, BlockingQueue<Runnable> blockingQueue) {
+    public MyCustomizeThreadPool(int corePoolSize, int maxSize, int timeout, TimeUnit timeUnit, BlockingQueue<Runnable> blockingQueue, RejectHandle rejectHandle) {
         this.corePoolSize = corePoolSize;
         this.maxSize = maxSize;
         this.timeout = timeout;
         this.timeUnit = timeUnit;
         this.blockingQueue = blockingQueue;
+        this.rejectHandle = rejectHandle;
     }
 
 
@@ -46,7 +55,7 @@ public class MyThreadPool {
 
     // 判断coreList中有多少个元素，没有到corePoolSize就创建线程
     // TODO 存在线程安全问题
-    void execute(Runnable command) {
+    public void execute(Runnable command) {
         if (coreList.size() < corePoolSize) {
             Thread thread = new CoreThread();
             coreList.add(thread);
@@ -63,7 +72,7 @@ public class MyThreadPool {
             thread.start();
         }
         if (!blockingQueue.offer(command)) {
-            throw new RuntimeException("阻塞队列已满！");
+            rejectHandle.reject(command, this);
         }
     }
 
