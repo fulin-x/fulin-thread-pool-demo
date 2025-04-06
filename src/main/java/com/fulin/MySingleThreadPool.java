@@ -10,22 +10,28 @@ import java.util.concurrent.BlockingQueue;
  **/
 public class MySingleThreadPool {
 
-   BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(1024);
+    // 阻塞队列保存任务
+    BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(1024);
 
-   Thread thread = new Thread(()->{
-       while (true){
-           try{
-               Runnable command = blockingQueue.take();
-               command.run();
-           }catch (InterruptedException e){
-               throw new RuntimeException(e);
-           }
-       }
-   },"唯一线程");
+    Thread thread = new Thread(() -> {
+        while (true) {
+            try {
+                // 从阻塞队列中获取任务并执行
+                Runnable command = blockingQueue.take();
+                command.run();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }, "唯一线程");
+
     {
+        // 启动线程
         thread.start();
     }
+
     void execute(Runnable command) {
+        // 将任务添加到阻塞队列中
         boolean offer = blockingQueue.offer(command);
     }
 }
